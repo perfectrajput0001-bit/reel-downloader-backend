@@ -1,0 +1,26 @@
+const express = require("express");
+const cors = require("cors");
+const { exec } = require("child_process");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.post("/download", (req, res) => {
+  const { url } = req.body;
+
+  if (!url || !url.includes("instagram.com")) {
+    return res.status(400).json({ error: "Invalid Instagram URL" });
+  }
+
+  exec(`yt-dlp -f mp4 -g "${url}"`, (err, stdout) => {
+    if (err) {
+      return res.status(500).json({ error: "Download failed" });
+    }
+
+    res.json({ downloadUrl: stdout.trim() });
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log("Server running on", PORT));
